@@ -2,11 +2,20 @@ import cv2
 import mediapipe as mp
 import time
 import math
+import pyttsx3  # For voice instructions
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
+
+# Initialize Text-to-Speech Engine
+engine = pyttsx3.init()
+
+# Function to provide voice instructions
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
 
 # Define Surya Namaskar sequence and landmarks to check
 poses = [
@@ -24,7 +33,6 @@ current_step = 0
 instructions_display_time = 5  # Seconds to display feedback
 last_instruction_time = time.time()
 
-
 # Helper function to calculate angle between three points
 def calculate_angle(a, b, c):
     a = [a.x, a.y]
@@ -35,7 +43,6 @@ def calculate_angle(a, b, c):
     if angle > 180.0:
         angle = 360 - angle
     return angle
-
 
 # Function to detect and instruct on specific pose
 def detect_pose_landmarks(landmarks, step):
@@ -69,11 +76,12 @@ def detect_pose_landmarks(landmarks, step):
 
     return "Hold this pose correctly!"
 
-
 # Start Video Capture
 cap = cv2.VideoCapture(0)
 
 print("Starting Surya Namaskar guide...")
+speak("Starting Surya Namaskar guide. Please follow the instructions.")
+
 while cap.isOpened():
     success, frame = cap.read()
     if not success:
@@ -101,6 +109,9 @@ while cap.isOpened():
 
         # Check time for pose switching
         if time.time() - last_instruction_time > instructions_display_time:
+            # Speak and move to the next pose
+            print(f"Pose: {detected_pose}, Feedback: {feedback}")
+            speak(f"{detected_pose}. {feedback}")
             current_step = (current_step + 1) % len(poses)
             last_instruction_time = time.time()
 
